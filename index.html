@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DADA WORKS — 見積もり算出</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #222222;
+    --border: #2e2e2e;
+    --accent: #e8ff47;
+    --accent2: #ff6b35;
+    --text: #f0f0f0;
+    --text-muted: #888;
+    --text-dim: #555;
+    --success: #4ade80;
+    --warning: #fbbf24;
+    --danger: #f87171;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  html { font-size: 16px; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── Header ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(15,15,15,.92);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+  .logo {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: .15em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+  .logo span { color: var(--text-muted); font-weight: 300; }
+  .tab-nav { display: flex; gap: 4px; }
+  .tab-btn {
+    background: none;
+    border: 1px solid transparent;
+    color: var(--text-muted);
+    padding: 8px 20px;
+    border-radius: 100px;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: .85rem;
+    font-weight: 500;
+    transition: all .2s;
+  }
+  .tab-btn:hover { color: var(--text); border-color: var(--border); }
+  .tab-btn.active {
+    background: var(--accent);
+    color: #0f0f0f;
+    border-color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* ── Layout ── */
+  main { max-width: 860px; margin: 0 auto; padding: 48px 24px; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ── Section ── */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── Form ── */
+  label {
+    display: block;
+    font-size: .8rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    letter-spacing: .03em;
+  }
+  input[type="number"], input[type="text"], select, textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: .95rem;
+    padding: 11px 14px;
+    outline: none;
+    transition: border-color .2s;
+    appearance: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+  .field { margin-bottom: 16px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .field-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+  /* ── Amount input ── */
+  .amount-wrap { position: relative; }
+  .amount-wrap span {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: .9rem;
+    pointer-events: none;
+  }
+  .amount-wrap input { padding-left: 28px; }
+
+  /* ── Option tags ── */
+  .options-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .opt-tag {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: all .2s;
+    user-select: none;
+  }
+  .opt-tag input[type="checkbox"] { display: none; }
+  .opt-tag .check {
+    width: 16px;
+    height: 16px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all .2s;
+  }
+  .opt-tag.checked {
+    border-color: var(--accent);
+    background: rgba(232,255,71,.06);
+  }
+  .opt-tag.checked .check {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .opt-tag.checked .check::after {
+    content: '✓';
+    font-size: 10px;
+    color: #0f0f0f;
+    font-weight: 700;
+  }
+  .opt-label { font-size: .85rem; }
+  .opt-price { font-size: .75rem; color: var(--accent); font-family: 'Outfit', sans-serif; }
+
+  /* ── Margin selector ── */
+  .margin-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .margin-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 8px 18px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: .85rem;
+    font-family: 'Noto Sans JP', sans-serif;
+    transition: all .2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .margin-btn .rate { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1rem; }
+  .margin-btn .desc { font-size: .7rem; }
+  .margin-btn:hover { border-color: var(--text-dim); color: var(--text); }
+  .margin-btn.active { background: rgba(232,255,71,.1); border-color: var(--accent); color: var(--accent); }
+  .margin-custom-wrap { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+  .margin-custom-wrap input { width: 80px; }
+
+  /* ── Result ── */
+  .result-card {
+    background: linear-gradient(135deg, rgba(232,255,71,.08) 0%, rgba(232,255,71,.02) 100%);
+    border: 1px solid rgba(232,255,71,.3);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-top: 8px;
+  }
+  .result-title {
+    font-size: .7rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-family: 'Outfit', sans-serif;
+    margin-bottom: 20px;
+  }
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    font-size: .9rem;
+  }
+  .result-row:last-child { border-bottom: none; }
+  .result-row .label { color: var(--text-muted); }
+  .result-row .value {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+  }
+  .result-row.total {
+    padding-top: 16px;
+    margin-top: 4px;
+    border-top: 1px solid rgba(232,255,71,.3);
+    border-bottom: none;
+  }
+  .result-row.total .label { color: var(--text); font-weight: 700; font-size: 1rem; }
+  .result-row.total .value {
+    font-size: 1.8rem;
+    color: var(--accent);
+  }
+  .result-row.sub { font-size: .8rem; }
+  .result-row.sub .value { color: var(--text-muted); }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-size: .7rem;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+  }
+  .badge-warn { background: rgba(251,191,36,.15); color: var(--warning); }
+  .badge-ok { background: rgba(74,222,128,.15); color: var(--success); }
+  .badge-info { background: rgba(232,255,71,.12); color: var(--accent); }
+
+  /* ── Note box ── */
+  .note-box {
+    background: rgba(255,107,53,.07);
+    border: 1px solid rgba(255,107,53,.25);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    font-size: .82rem;
+    color: #ffa07a;
+    margin-top: 12px;
+    line-height: 1.6;
+  }
+
+  /* ── Button ── */
+  .btn-calc {
+    width: 100%;
+    background: var(--accent);
+    color: #0f0f0f;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: .05em;
+    cursor: pointer;
+    transition: all .2s;
+    margin-top: 8px;
+  }
+  .btn-calc:hover { background: #d4f000; transform: translateY(-1px); }
+  .btn-calc:active { transform: translateY(0); }
+
+  .btn-reset {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-radius: var(--radius-sm);
+    padding: 10px 20px;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: .85rem;
+    transition: all .2s;
+    margin-top: 8px;
+  }
+  .btn-reset:hover { border-color: var(--text-dim); color: var(--text); }
+
+  /* ── Copy ── */
+  .copy-area {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    font-family: 'Outfit', sans-serif;
+    font-size: .85rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+    color: var(--text-muted);
+    margin-top: 16px;
+  }
+  .btn-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-radius: var(--radius-sm);
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: .8rem;
+    font-family: 'Noto Sans JP', sans-serif;
+    transition: all .2s;
+    margin-top: 8px;
+  }
+  .btn-copy:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-copy.copied { border-color: var(--success); color: var(--success); }
+
+  /* ── Adjustment line ── */
+  .adj-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 10px;
+    align-items: end;
+    margin-bottom: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+  }
+  .adj-row button {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--danger);
+    border-radius: var(--radius-sm);
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .2s;
+    align-self: flex-end;
+  }
+  .adj-row button:hover { background: rgba(248,113,113,.1); border-color: var(--danger); }
+  .add-adj-btn {
+    background: none;
+    border: 1px dashed var(--border);
+    color: var(--text-muted);
+    border-radius: var(--radius-sm);
+    padding: 10px;
+    cursor: pointer;
+    width: 100%;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: .85rem;
+    transition: all .2s;
+  }
+  .add-adj-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Hint ── */
+  .hint { font-size: .78rem; color: var(--text-dim); margin-top: 5px; }
+
+  /* ── Chip ── */
+  .chip {
+    display: inline-block;
+    padding: 3px 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: .75rem;
+    color: var(--text-muted);
+    margin-right: 4px;
+    margin-bottom: 4px;
+  }
+
+  /* ── Divider ── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 20px 0;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    header { padding: 14px 16px; flex-wrap: wrap; gap: 12px; }
+    main { padding: 24px 14px; }
+    .section { padding: 20px 16px; }
+    .field-row, .field-row-3 { grid-template-columns: 1fr; }
+    .adj-row { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">DADA<span>WORKS</span> <span style="color:var(--text-dim);font-size:.75rem;margin-left:8px;letter-spacing:0">見積もり算出</span></div>
+  <nav class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('fix')">LP修正</button>
+    <button class="tab-btn" onclick="switchTab('lp')">新規LP</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ======== 新規LP ======== -->
+<div class="panel" id="panel-lp">
+
+  <div class="section">
+    <div class="section-title">基本情報</div>
+    <div class="field-row">
+      <div class="field">
+        <label>クライアント名</label>
+        <input type="text" id="lp-client" placeholder="例：ロットネスト株式会社">
+      </div>
+      <div class="field">
+        <label>案件名</label>
+        <input type="text" id="lp-project" placeholder="例：サービスLP新規制作">
+      </div>
+    </div>
+    <div class="field">
+      <label>クライアント種別</label>
+      <select id="lp-client-type" onchange="handleClientType()">
+        <option value="normal">通常</option>
+        <option value="rotnest">ロットネスト（固定価格）</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="section" id="lp-base-section">
+    <div class="section-title">基本パッケージ</div>
+    <div class="note-box">
+      ✦ 基本パッケージ：<strong>¥300,000</strong>（ワイヤー・デザイン・コーディング・データ納品）
+    </div>
+    <div id="lp-rotnest-note" style="display:none" class="note-box" style="margin-top:8px">
+      ⚠️ ロットネストは過去実績固定価格のため、基本価格は変更できません。オプション追加も要確認。
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">オプション追加</div>
+    <div class="options-grid" id="lp-options">
+      <label class="opt-tag" data-price="50000">
+        <input type="checkbox" onchange="toggleOpt(this)">
+        <span class="check"></span>
+        <span class="opt-label">LP構成・設計</span>
+        <span class="opt-price">+¥50,000</span>
+      </label>
+      <label class="opt-tag" data-price="30000">
+        <input type="checkbox" onchange="toggleOpt(this)">
+        <span class="check"></span>
+        <span class="opt-label">Git対応</span>
+        <span class="opt-price">+¥30,000</span>
+      </label>
+      <label class="opt-tag" data-price="20000">
+        <input type="checkbox" onchange="toggleOpt(this)">
+        <span class="check"></span>
+        <span class="opt-label">スマホ最適化（別途）</span>
+        <span class="opt-price">+¥20,000</span>
+      </label>
+      <label class="opt-tag" data-price="30000">
+        <input type="checkbox" onchange="toggleOpt(this)">
+        <span class="check"></span>
+        <span class="opt-label">アニメーション実装</span>
+        <span class="opt-price">+¥30,000</span>
+      </label>
+      <label class="opt-tag" data-price="15000">
+        <input type="checkbox" onchange="toggleOpt(this)">
+        <span class="check"></span>
+        <span class="opt-label">フォーム設置・連携</span>
+        <span class="opt-price">+¥15,000</span>
+      </label>
+      <label class="opt-tag" data-price="20000">
+        <input type="checkbox" onchange="toggleOpt(this)">
+        <span class="check"></span>
+        <span class="opt-label">ABテスト用2パターン目</span>
+        <span class="opt-price">+¥20,000</span>
+      </label>
+      <label class="opt-tag" data-price="10000">
+        <input type="checkbox" onchange="toggleOpt(this)">
+        <span class="check"></span>
+        <span class="opt-label">OGP / メタ設定</span>
+        <span class="opt-price">+¥10,000</span>
+      </label>
+    </div>
+
+    <div class="divider"></div>
+    <div class="field-row">
+      <div class="field">
+        <label>カスタムオプション名</label>
+        <input type="text" id="lp-custom-name" placeholder="例：多言語対応">
+      </div>
+      <div class="field">
+        <label>カスタムオプション金額</label>
+        <div class="amount-wrap"><span>¥</span><input type="number" id="lp-custom-price" placeholder="0" min="0" step="1000"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">ディレクションフィー</div>
+    <div class="field">
+      <label>ディレクションフィー金額</label>
+      <div class="amount-wrap"><span>¥</span><input type="number" id="lp-dir-fee" placeholder="30000" min="0" step="1000"></div>
+      <p class="hint">新規LPの場合、基本 ¥30,000〜 が目安。オプション数・難易度に応じて調整してください。</p>
+    </div>
+  </div>
+
+  <button class="btn-calc" onclick="calcLP()">見積もりを算出する</button>
+
+  <div id="lp-result" style="display:none;margin-top:24px">
+    <div class="result-card">
+      <div class="result-title">▸ 見積もり結果</div>
+      <div id="lp-result-rows"></div>
+    </div>
+    <div id="lp-copy-area"></div>
+  </div>
+</div>
+
+
+<!-- ======== LP修正 ======== -->
+<div class="panel active" id="panel-fix">
+
+  <div class="section">
+    <div class="section-title">基本情報</div>
+    <div class="field-row">
+      <div class="field">
+        <label>クライアント名</label>
+        <input type="text" id="fix-client" placeholder="例：〇〇株式会社">
+      </div>
+      <div class="field">
+        <label>案件名</label>
+        <input type="text" id="fix-project" placeholder="例：LP FVコピー修正">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>対象URL数</label>
+        <input type="number" id="fix-url-count" placeholder="1" min="1" value="1" onchange="suggestMargin()">
+      </div>
+      <div class="field">
+        <label>修正箇所の判断業務</label>
+        <select id="fix-complexity" onchange="suggestMargin()">
+          <option value="none">なし（単純作業のみ）</option>
+          <option value="some">あり（一部判断が必要）</option>
+          <option value="heavy">多い（複数箇所・複雑な判断）</option>
+        </select>
+      </div>
+    </div>
+    <div id="margin-suggestion" class="note-box" style="display:none;margin-top:0"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">外注費用</div>
+    <p class="hint" style="margin-bottom:16px">外注から実際に請求される金額を入力してください。クライアントへの請求は次の「表示価格調整」で設定します。</p>
+    <div id="adj-rows"></div>
+    <button class="add-adj-btn" onclick="addAdjRow()">＋ 外注費用を追加</button>
+  </div>
+
+  <div class="section">
+    <div class="section-title">マージン設定</div>
+    <label style="margin-bottom:12px">マージン率（クライアント請求の表示価格に対して計算）</label>
+    <div class="margin-btns">
+      <button class="margin-btn" onclick="setMargin(20,'軽微修正')">
+        <span class="rate">20%</span>
+        <span class="desc">軽微修正</span>
+      </button>
+      <button class="margin-btn" onclick="setMargin(25,'軽微修正（やや複雑）')">
+        <span class="rate">25%</span>
+        <span class="desc">やや複雑</span>
+      </button>
+      <button class="margin-btn" onclick="setMargin(30,'管理型修正')">
+        <span class="rate">30%</span>
+        <span class="desc">管理型</span>
+      </button>
+      <button class="margin-btn" onclick="setMargin(40,'リスク型修正')">
+        <span class="rate">40%</span>
+        <span class="desc">リスク型</span>
+      </button>
+    </div>
+    <div class="margin-custom-wrap">
+      <input type="number" id="margin-rate" placeholder="25" min="0" max="100" step="5" style="width:80px">
+      <span style="font-size:.85rem;color:var(--text-muted)">%　カスタム入力</span>
+    </div>
+    <div id="margin-guide" style="margin-top:8px"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">最低請求額 / 備考</div>
+    <div class="field-row">
+      <div class="field">
+        <label>最低請求額</label>
+        <div class="amount-wrap"><span>¥</span><input type="number" id="fix-min-charge" placeholder="5000" min="0" step="1000" value="5000"></div>
+      </div>
+      <div class="field">
+        <label>備考メモ（コピー用）</label>
+        <input type="text" id="fix-memo" placeholder="例：急ぎ対応">
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-calc" onclick="calcFix()">見積もりを算出する</button>
+  <button class="btn-reset" onclick="resetFix()">リセット</button>
+
+  <div id="fix-result" style="display:none;margin-top:24px">
+    <div class="result-card">
+      <div class="result-title">▸ 見積もり結果</div>
+      <div id="fix-result-rows"></div>
+    </div>
+    <div id="fix-copy-area"></div>
+  </div>
+
+</div>
+
+</main>
+
+<script>
+/* ─────────── Tab ─────────── */
+function switchTab(t) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + t).classList.add('active');
+  event.target.classList.add('active');
+}
+
+/* ─────────── LP ─────────── */
+function handleClientType() {
+  const v = document.getElementById('lp-client-type').value;
+  document.getElementById('lp-rotnest-note').style.display = v === 'rotnest' ? 'block' : 'none';
+}
+
+function toggleOpt(cb) {
+  const tag = cb.closest('.opt-tag');
+  tag.classList.toggle('checked', cb.checked);
+}
+
+function calcLP() {
+  const client = document.getElementById('lp-client').value || '未入力';
+  const project = document.getElementById('lp-project').value || '未入力';
+  const isRotnest = document.getElementById('lp-client-type').value === 'rotnest';
+  
+  const base = 300000;
+  let optTotal = 0;
+  const optItems = [];
+  
+  document.querySelectorAll('#lp-options .opt-tag.checked').forEach(tag => {
+    const price = parseInt(tag.dataset.price);
+    const name = tag.querySelector('.opt-label').textContent;
+    optTotal += price;
+    optItems.push({ name, price });
+  });
+  
+  const customName = document.getElementById('lp-custom-name').value;
+  const customPrice = parseInt(document.getElementById('lp-custom-price').value) || 0;
+  if (customName && customPrice > 0) {
+    optTotal += customPrice;
+    optItems.push({ name: customName, price: customPrice });
+  }
+  
+  const dirFee = parseInt(document.getElementById('lp-dir-fee').value) || 0;
+  const total = base + optTotal + dirFee;
+  
+  let html = `
+    <div class="result-row"><span class="label">クライアント</span><span class="value">${client}</span></div>
+    <div class="result-row"><span class="label">案件名</span><span class="value">${project}</span></div>
+    <div class="result-row"><span class="label">基本パッケージ</span><span class="value">¥${fmt(base)}</span></div>
+  `;
+  
+  optItems.forEach(o => {
+    html += `<div class="result-row sub"><span class="label">　+ ${o.name}</span><span class="value">¥${fmt(o.price)}</span></div>`;
+  });
+  
+  if (dirFee > 0) {
+    html += `<div class="result-row"><span class="label">ディレクションフィー</span><span class="value">¥${fmt(dirFee)}</span></div>`;
+  }
+  
+  if (isRotnest) {
+    html += `<div class="result-row"><span class="label">クライアント種別</span><span class="value"><span class="badge badge-warn">ロットネスト固定</span></span></div>`;
+  }
+  
+  html += `<div class="result-row total"><span class="label">合計（税抜）</span><span class="value">¥${fmt(total)}</span></div>`;
+  html += `<div class="result-row sub"><span class="label">消費税（10%）</span><span class="value">¥${fmt(Math.round(total * 0.1))}</span></div>`;
+  html += `<div class="result-row sub"><span class="label" style="font-weight:700;color:var(--text)">合計（税込）</span><span class="value" style="color:var(--text)">¥${fmt(Math.round(total * 1.1))}</span></div>`;
+  
+  document.getElementById('lp-result-rows').innerHTML = html;
+  document.getElementById('lp-result').style.display = 'block';
+  document.getElementById('lp-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  
+  // Copy text
+  let optText = optItems.map(o => `  ・${o.name}：¥${fmt(o.price)}`).join('\n');
+  const copyText = `【見積もり】${project}
+クライアント：${client}
+──────────────
+基本パッケージ：¥${fmt(base)}
+${optItems.length > 0 ? optText + '\n' : ''}${dirFee > 0 ? `ディレクションフィー：¥${fmt(dirFee)}\n` : ''}──────────────
+合計（税抜）：¥${fmt(total)}
+合計（税込）：¥${fmt(Math.round(total * 1.1))}`;
+  
+  document.getElementById('lp-copy-area').innerHTML = `
+    <div class="copy-area" id="lp-copy-text">${copyText}</div>
+    <button class="btn-copy" onclick="copyText('lp-copy-text', this)">📋 コピー</button>
+  `;
+}
+
+/* ─────────── Fix: Adj rows ─────────── */
+let adjCount = 0;
+
+const MIN_DISPLAY = 5000; // 外注表示価格の最低
+const MIN_DIR_FEE = 5000; // ディレクションフィーの最低
+
+function addAdjRow(defaultType) {
+  adjCount++;
+  const id = adjCount;
+  const div = document.createElement('div');
+  div.className = 'adj-row';
+  div.id = 'adj-' + id;
+  div.innerHTML = `
+    <div class="field">
+      <label>外注種別</label>
+      <select id="adj-type-${id}">
+        <option ${defaultType==='デザイナー'?'selected':''}>デザイナー</option>
+        <option ${defaultType==='コーダー'?'selected':''}>コーダー</option>
+        <option>その他</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>外注請求額（仕入）</label>
+      <div class="amount-wrap"><span>¥</span><input type="number" class="adj-cost" placeholder="3000" min="0" step="500" oninput="applyMinDisplay(${id})"></div>
+    </div>
+    <div class="field">
+      <label>クライアント表示価格 <span style="color:var(--accent);font-size:.7rem">最低¥${fmt(MIN_DISPLAY)}</span></label>
+      <div class="amount-wrap"><span>¥</span><input type="number" class="adj-display" placeholder="${MIN_DISPLAY}" min="${MIN_DISPLAY}" step="500" onblur="enforceMinDisplay(this)"></div>
+    </div>
+    <button onclick="removeAdj(${id})">✕</button>
+  `;
+  document.getElementById('adj-rows').appendChild(div);
+}
+
+function applyMinDisplay(id) {
+  const row = document.getElementById('adj-' + id);
+  const cost = parseInt(row.querySelector('.adj-cost').value) || 0;
+  const dispInput = row.querySelector('.adj-display');
+  // 仕入れを入力・変更するたびに表示価格をリセット
+  dispInput.value = Math.max(cost, MIN_DISPLAY);
+}
+
+function enforceMinDisplay(input) {
+  const v = parseInt(input.value) || 0;
+  if (v < MIN_DISPLAY) input.value = MIN_DISPLAY;
+}
+
+function removeAdj(id) {
+  const el = document.getElementById('adj-' + id);
+  if (el) el.remove();
+}
+
+/* ─────────── Margin ─────────── */
+let selectedMargin = null;
+
+function setMargin(rate, label) {
+  document.querySelectorAll('.margin-btn').forEach(b => b.classList.remove('active'));
+  event.target.closest('.margin-btn').classList.add('active');
+  document.getElementById('margin-rate').value = rate;
+  selectedMargin = { rate, label };
+  showMarginGuide(rate, label);
+}
+
+function showMarginGuide(rate, label) {
+  const guides = {
+    20: '✦ 軽微修正（1URL・判断なし）— シンプルな差し替えや文言修正',
+    25: '✦ 軽微修正（やや複雑）— 判断はほぼ不要だが工数がやや多い',
+    30: '✦ 管理型修正（複数URL・差し替え管理あり）',
+    40: '✦ リスク型修正（複数URL・複数箇所・複雑な判断業務あり）',
+  };
+  const el = document.getElementById('margin-guide');
+  el.innerHTML = `<p class="hint">${guides[rate] || ''}</p>`;
+}
+
+function suggestMargin() {
+  const urls = parseInt(document.getElementById('fix-url-count').value) || 1;
+  const complexity = document.getElementById('fix-complexity').value;
+  
+  let suggested, type;
+  if (urls === 1 && complexity === 'none') {
+    suggested = 20; type = '軽微修正（1URL・判断なし）';
+  } else if (urls === 1 && complexity === 'some') {
+    suggested = 25; type = '軽微修正（やや複雑）';
+  } else if (urls > 1 && complexity !== 'heavy') {
+    suggested = 30; type = '管理型修正（複数URL）';
+  } else if (complexity === 'heavy') {
+    suggested = 40; type = 'リスク型修正';
+  } else {
+    suggested = 25; type = '目安';
+  }
+  
+  const el = document.getElementById('margin-suggestion');
+  el.style.display = 'block';
+  el.innerHTML = `💡 この案件の推奨マージン：<strong>${suggested}%</strong>（${type}）`;
+}
+
+/* ─────────── Fix Calc ─────────── */
+function calcFix() {
+  const client = document.getElementById('fix-client').value || '未入力';
+  const project = document.getElementById('fix-project').value || '未入力';
+  const minCharge = parseInt(document.getElementById('fix-min-charge').value) || 5000;
+  const marginRate = parseFloat(document.getElementById('margin-rate').value) || 25;
+  const memo = document.getElementById('fix-memo').value;
+  
+  const rows = document.querySelectorAll('.adj-row');
+  if (rows.length === 0) {
+    alert('外注費用を1件以上追加してください。');
+    return;
+  }
+  
+  let items = [];
+  let totalCost = 0;
+  let totalDisplay = 0;
+  
+  rows.forEach(row => {
+    const type = row.querySelector('select').value;
+    const cost = parseInt(row.querySelector('.adj-cost').value) || 0;
+    const rawDisplay = parseInt(row.querySelector('.adj-display').value) || cost;
+    const display = Math.max(rawDisplay, MIN_DISPLAY);
+    totalCost += cost;
+    totalDisplay += display;
+    items.push({ type, cost, display });
+  });
+  
+  // マージン計算：粗利率ベース（クライアント請求の X% が粗利になるよう逆算）
+  let dirFee = Math.round(totalDisplay * marginRate / (100 - marginRate));
+  const dirFeeAppliedMin = dirFee < MIN_DIR_FEE;
+  if (dirFeeAppliedMin) dirFee = MIN_DIR_FEE;
+  // 実質：クライアント請求 = 表示価格 + ディレクションフィー
+  let clientCharge = totalDisplay + dirFee;
+  
+  // 最低請求額チェック
+  const appliedMin = clientCharge < minCharge;
+  if (appliedMin) clientCharge = minCharge;
+  
+  // DADA利益
+  const profit = clientCharge - totalCost;
+  const actualMarginPct = Math.round(profit / clientCharge * 100);
+  
+  let html = `
+    <div class="result-row"><span class="label">クライアント</span><span class="value">${client}</span></div>
+    <div class="result-row"><span class="label">案件名</span><span class="value">${project}</span></div>
+  `;
+  
+  items.forEach((item, i) => {
+    const adjusted = item.display !== item.cost;
+    const minApplied = item.display === MIN_DISPLAY && item.cost < MIN_DISPLAY;
+    html += `
+      <div class="result-row">
+        <span class="label">${item.type}（外注仕入）</span>
+        <span class="value">¥${fmt(item.cost)}</span>
+      </div>
+    `;
+    if (adjusted) {
+      const badge = minApplied
+        ? `<span class="badge badge-info">最低¥${fmt(MIN_DISPLAY)}適用</span>`
+        : `<span class="badge badge-warn">調整済み +¥${fmt(item.display - item.cost)}</span>`;
+      html += `
+        <div class="result-row sub">
+          <span class="label">　→ クライアント表示価格</span>
+          <span class="value">¥${fmt(item.display)} ${badge}</span>
+        </div>
+      `;
+    }
+  });
+  
+  html += `<div class="result-row"><span class="label">ディレクションフィー（${marginRate}%）</span><span class="value">¥${fmt(dirFee)}${dirFeeAppliedMin ? ' <span class="badge badge-warn">最低¥'+fmt(MIN_DIR_FEE)+'適用</span>' : ''}</span></div>`;
+  
+  if (appliedMin) {
+    html += `<div class="result-row sub"><span class="label">最低請求額適用</span><span class="value"><span class="badge badge-warn">¥${fmt(minCharge)}</span></span></div>`;
+  }
+  
+  html += `
+    <div class="result-row total"><span class="label">クライアント請求（税抜）</span><span class="value">¥${fmt(clientCharge)}</span></div>
+    <div class="result-row sub"><span class="label">消費税（10%）</span><span class="value">¥${fmt(Math.round(clientCharge * 0.1))}</span></div>
+    <div class="result-row sub"><span class="label" style="font-weight:700;color:var(--text)">クライアント請求（税込）</span><span class="value" style="color:var(--text)">¥${fmt(Math.round(clientCharge * 1.1))}</span></div>
+    <div class="divider"></div>
+    <div class="result-row sub"><span class="label">外注コスト合計</span><span class="value" style="color:var(--danger)">¥${fmt(totalCost)}</span></div>
+    <div class="result-row sub"><span class="label">DADA WORKS 利益</span><span class="value" style="color:var(--success)">¥${fmt(profit)}</span></div>
+    <div class="result-row sub"><span class="label">実質マージン率</span><span class="value"><span class="badge badge-ok">${actualMarginPct}%</span></span></div>
+  `;
+  
+  document.getElementById('fix-result-rows').innerHTML = html;
+  document.getElementById('fix-result').style.display = 'block';
+  document.getElementById('fix-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  
+  // 社内用コピーテキスト
+  let itemText = items.map(i => {
+    const adj = i.display !== i.cost ? `（表示：¥${fmt(i.display)}）` : '';
+    return `  ・${i.type}：¥${fmt(i.cost)}${adj}`;
+  }).join('\n');
+  
+  const copyText = `【見積もり】${project}
+クライアント：${client}${memo ? '\n備考：' + memo : ''}
+──────────────
+${itemText}
+ディレクションフィー（${marginRate}%）：¥${fmt(dirFee)}
+──────────────
+合計（税抜）：¥${fmt(clientCharge)}
+合計（税込）：¥${fmt(Math.round(clientCharge * 1.1))}
+[DADA利益：¥${fmt(profit)} / 実質${actualMarginPct}%]`;
+
+  // クライアント送付用コピーテキスト
+  const clientCopyText = `${project}の件、
+お見積もり以下になります。
+ーーーー
+合計（税抜）：¥${fmt(clientCharge)}
+ーーーー
+ご確認よろしくお願いいたします！`;
+  
+  document.getElementById('fix-copy-area').innerHTML = `
+    <p style="font-size:.75rem;color:var(--text-muted);margin:16px 0 6px;letter-spacing:.05em">▸ 社内確認用</p>
+    <div class="copy-area" id="fix-copy-text">${copyText}</div>
+    <button class="btn-copy" onclick="copyText('fix-copy-text', this)">📋 コピー</button>
+    <p style="font-size:.75rem;color:var(--text-muted);margin:16px 0 6px;letter-spacing:.05em">▸ クライアント送付用</p>
+    <div class="copy-area" id="fix-copy-client">${clientCopyText}</div>
+    <button class="btn-copy" onclick="copyText('fix-copy-client', this)">📋 コピー</button>
+  `;
+}
+
+function resetFix() {
+  document.getElementById('fix-client').value = '';
+  document.getElementById('fix-project').value = '';
+  document.getElementById('fix-url-count').value = '1';
+  document.getElementById('fix-complexity').value = 'none';
+  document.getElementById('adj-rows').innerHTML = '';
+  document.getElementById('margin-rate').value = '';
+  document.getElementById('fix-memo').value = '';
+  document.getElementById('fix-result').style.display = 'none';
+  document.getElementById('fix-copy-area').innerHTML = '';
+  document.getElementById('margin-suggestion').style.display = 'none';
+  document.getElementById('margin-guide').innerHTML = '';
+  document.querySelectorAll('.margin-btn').forEach(b => b.classList.remove('active'));
+  adjCount = 0;
+}
+
+/* ─────────── Utilities ─────────── */
+function fmt(n) {
+  return n.toLocaleString('ja-JP');
+}
+
+function copyText(elId, btn) {
+  const text = document.getElementById(elId).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ コピーしました';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '📋 コピー';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+/* ─────────── Init ─────────── */
+addAdjRow('デザイナー');
+addAdjRow('コーダー');
+</script>
+</body>
+</html>
