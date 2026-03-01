@@ -363,15 +363,17 @@
 
   /* ── Adjustment line ── */
   .adj-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr auto;
-    gap: 10px;
-    align-items: end;
-    margin-bottom: 10px;
     background: var(--surface2);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     padding: 14px;
+    margin-bottom: 10px;
+  }
+  .adj-row-main {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 10px;
+    align-items: end;
   }
   .adj-row button {
     background: none;
@@ -418,6 +420,56 @@
     margin-right: 4px;
     margin-bottom: 4px;
   }
+
+  /* ── Donburi ── */
+  .donburi-wrap { margin-top: 8px; }
+  .donburi-toggle-btn {
+    background: none;
+    border: 1px dashed rgba(251,191,36,.4);
+    color: var(--warning);
+    border-radius: var(--radius-sm);
+    padding: 8px 14px;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: .82rem;
+    transition: all .2s;
+    width: 100%;
+    text-align: left;
+  }
+  .donburi-toggle-btn:hover { background: rgba(251,191,36,.06); }
+  .donburi-panel {
+    background: rgba(251,191,36,.04);
+    border: 1px solid rgba(251,191,36,.2);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    margin-top: 8px;
+  }
+  .donburi-options { display: flex; gap: 8px; flex-wrap: wrap; }
+  .donburi-opt {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: all .2s;
+    flex: 1;
+    min-width: 160px;
+  }
+  .donburi-opt:hover { border-color: var(--warning); background: rgba(251,191,36,.06); }
+  .donburi-opt.selected { border-color: var(--warning); background: rgba(251,191,36,.1); }
+  .donburi-label { font-size: .83rem; }
+  .donburi-price { font-family: 'Outfit', sans-serif; font-weight: 700; color: var(--warning); font-size: .9rem; }
+  .donburi-git {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .donburi-git input { display: none; }
 
   /* ── Divider ── */
   .divider {
@@ -756,37 +808,123 @@ const MIN_DIR_FEE = 5000; // ディレクションフィーの最低
 function addAdjRow(defaultType) {
   adjCount++;
   const id = adjCount;
+  
+  // メイン行
   const div = document.createElement('div');
   div.className = 'adj-row';
   div.id = 'adj-' + id;
   div.innerHTML = `
-    <div class="field">
-      <label>外注種別</label>
-      <select id="adj-type-${id}">
-        <option ${defaultType==='デザイナー'?'selected':''}>デザイナー</option>
-        <option ${defaultType==='コーダー'?'selected':''}>コーダー</option>
-        <option>その他</option>
-      </select>
+    <div class="adj-row-main">
+      <div class="field">
+        <label>外注種別</label>
+        <select id="adj-type-${id}" onchange="toggleDonburi(${id})">
+          <option ${defaultType==='デザイナー'?'selected':''}>デザイナー</option>
+          <option ${defaultType==='デザイナー（まや）'?'selected':''}>デザイナー（まや）</option>
+          <option ${defaultType==='コーダー'?'selected':''}>コーダー</option>
+          <option>その他</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>外注請求額（仕入）</label>
+        <div class="amount-wrap"><span>¥</span><input type="number" class="adj-cost" placeholder="3000" min="0" step="500" oninput="applyMinDisplay(${id})"></div>
+      </div>
+      <div class="field">
+        <label>クライアント表示価格 <span style="color:var(--accent);font-size:.7rem">最低¥${fmt(MIN_DISPLAY)}</span></label>
+        <div class="amount-wrap"><span>¥</span><input type="number" class="adj-display" placeholder="${MIN_DISPLAY}" min="${MIN_DISPLAY}" step="500" onblur="enforceMinDisplay(this)"></div>
+      </div>
+      <button onclick="removeAdj(${id})">✕</button>
     </div>
-    <div class="field">
-      <label>外注請求額（仕入）</label>
-      <div class="amount-wrap"><span>¥</span><input type="number" class="adj-cost" placeholder="3000" min="0" step="500" oninput="applyMinDisplay(${id})"></div>
-    </div>
-    <div class="field">
-      <label>クライアント表示価格 <span style="color:var(--accent);font-size:.7rem">最低¥${fmt(MIN_DISPLAY)}</span></label>
-      <div class="amount-wrap"><span>¥</span><input type="number" class="adj-display" placeholder="${MIN_DISPLAY}" min="${MIN_DISPLAY}" step="500" onblur="enforceMinDisplay(this)"></div>
-    </div>
-    <button onclick="removeAdj(${id})">✕</button>
   `;
   document.getElementById('adj-rows').appendChild(div);
+
+  // どんぶりエリア（完全に別要素として追加）
+  const donburiDiv = document.createElement('div');
+  donburiDiv.id = 'donburi-' + id;
+  donburiDiv.style.display = defaultType === 'コーダー' ? 'block' : 'none';
+  donburiDiv.style.marginBottom = '10px';
+  donburiDiv.innerHTML = `
+    <button class="donburi-toggle-btn" onclick="toggleDonburiPanel(${id})">🎲 見積もり未定・どんぶり計算</button>
+    <div class="donburi-panel" id="donburi-panel-${id}" style="display:none">
+      <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:10px">修正内容を選択すると表示価格を自動セットします</p>
+      <div class="donburi-options">
+        <label class="donburi-opt" onclick="setDonburi(${id}, 8000)">
+          <span class="donburi-label">画像差し替えのみ</span>
+          <span class="donburi-price">¥8,000</span>
+        </label>
+        <label class="donburi-opt" onclick="setDonburi(${id}, 15000)">
+          <span class="donburi-label">画像差し替え＋CSS修正</span>
+          <span class="donburi-price">¥15,000</span>
+        </label>
+      </div>
+      <div style="margin-top:8px">
+        <label class="donburi-git" id="donburi-git-${id}">
+          <input type="checkbox" id="donburi-git-cb-${id}" onchange="applyGit(${id})">
+          <span class="check" id="donburi-git-check-${id}"></span>
+          <span style="font-size:.83rem">＋ Git対応（+¥5,000）</span>
+        </label>
+      </div>
+      <p class="hint" style="margin-top:8px;color:var(--warning)">⚠️ 概算価格です。社内確認用コピーに注釈が入ります。</p>
+    </div>
+  `;
+  document.getElementById('adj-rows').appendChild(donburiDiv);
 }
 
 function applyMinDisplay(id) {
   const row = document.getElementById('adj-' + id);
+  const type = document.getElementById('adj-type-' + id).value;
   const cost = parseInt(row.querySelector('.adj-cost').value) || 0;
   const dispInput = row.querySelector('.adj-display');
-  // 仕入れを入力・変更するたびに表示価格をリセット
-  dispInput.value = Math.max(cost, MIN_DISPLAY);
+  // まやのみ1.5倍、それ以外は等倍（最低5,000円）
+  const multiplier = type === 'デザイナー（まや）' ? 1.5 : 1;
+  dispInput.value = Math.max(Math.round(cost * multiplier), MIN_DISPLAY);
+}
+
+function toggleDonburi(id) {
+  const type = document.getElementById('adj-type-' + id).value;
+  const wrap = document.getElementById('donburi-' + id);
+  if (wrap) wrap.style.display = type === 'コーダー' ? 'block' : 'none';
+}
+
+function toggleDonburiPanel(id) {
+  const panel = document.getElementById('donburi-panel-' + id);
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+// どんぶりベース金額（Git除く）
+const donburiBase = {};
+
+function setDonburi(id, price, withGit) {
+  donburiBase[id] = price;
+  const gitCb = document.getElementById('donburi-git-cb-' + id);
+  const gitPrice = gitCb && gitCb.checked ? 5000 : 0;
+  const total = price + gitPrice;
+
+  const row = document.getElementById('adj-' + id);
+  row.querySelector('.adj-display').value = total;
+  row.querySelector('.adj-cost').value = ''; // 仕入れは未定
+
+  // 選択状態を更新
+  row.querySelectorAll('.donburi-opt').forEach(o => o.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+
+  // どんぶりフラグをセット
+  row.dataset.donburi = 'true';
+}
+
+function applyGit(id) {
+  const base = donburiBase[id] || 0;
+  if (!base) return;
+  const gitCb = document.getElementById('donburi-git-cb-' + id);
+  const gitCheck = document.getElementById('donburi-git-check-' + id);
+  const gitPrice = gitCb.checked ? 5000 : 0;
+  const row = document.getElementById('adj-' + id);
+  row.querySelector('.adj-display').value = base + gitPrice;
+  // チェックボックスの見た目更新
+  if (gitCheck) {
+    gitCheck.style.background = gitCb.checked ? 'var(--warning)' : '';
+    gitCheck.style.borderColor = gitCb.checked ? 'var(--warning)' : '';
+    gitCheck.innerHTML = gitCb.checked ? '<span style="font-size:10px;color:#0f0f0f;font-weight:700">✓</span>' : '';
+  }
 }
 
 function enforceMinDisplay(input) {
@@ -797,6 +935,8 @@ function enforceMinDisplay(input) {
 function removeAdj(id) {
   const el = document.getElementById('adj-' + id);
   if (el) el.remove();
+  const donburi = document.getElementById('donburi-' + id);
+  if (donburi) donburi.remove();
 }
 
 /* ─────────── Margin ─────────── */
@@ -866,10 +1006,13 @@ function calcFix() {
     const cost = parseInt(row.querySelector('.adj-cost').value) || 0;
     const rawDisplay = parseInt(row.querySelector('.adj-display').value) || cost;
     const display = Math.max(rawDisplay, MIN_DISPLAY);
+    const isDonburi = row.dataset.donburi === 'true';
     totalCost += cost;
     totalDisplay += display;
-    items.push({ type, cost, display });
+    items.push({ type, cost, display, isDonburi });
   });
+  
+  const hasDonburi = items.some(i => i.isDonburi);
   
   // マージン計算：粗利率ベース（クライアント請求の X% が粗利になるよう逆算）
   let dirFee = Math.round(totalDisplay * marginRate / (100 - marginRate));
@@ -897,13 +1040,15 @@ function calcFix() {
     html += `
       <div class="result-row">
         <span class="label">${item.type}（外注仕入）</span>
-        <span class="value">¥${fmt(item.cost)}</span>
+        <span class="value">${item.isDonburi ? '未定' : '¥'+fmt(item.cost)}${item.isDonburi ? ' <span class="badge badge-warn">どんぶり概算</span>' : ''}</span>
       </div>
     `;
-    if (adjusted) {
-      const badge = minApplied
-        ? `<span class="badge badge-info">最低¥${fmt(MIN_DISPLAY)}適用</span>`
-        : `<span class="badge badge-warn">調整済み +¥${fmt(item.display - item.cost)}</span>`;
+    if (adjusted || item.isDonburi) {
+      const badge = item.isDonburi
+        ? `<span class="badge badge-warn">概算</span>`
+        : minApplied
+          ? `<span class="badge badge-info">最低¥${fmt(MIN_DISPLAY)}適用</span>`
+          : `<span class="badge badge-warn">調整済み +¥${fmt(item.display - item.cost)}</span>`;
       html += `
         <div class="result-row sub">
           <span class="label">　→ クライアント表示価格</span>
@@ -936,7 +1081,9 @@ function calcFix() {
   // 社内用コピーテキスト
   let itemText = items.map(i => {
     const adj = i.display !== i.cost ? `（表示：¥${fmt(i.display)}）` : '';
-    return `  ・${i.type}：¥${fmt(i.cost)}${adj}`;
+    const donburiMark = i.isDonburi ? `（表示：¥${fmt(i.display)}・概算）` : adj;
+    const costStr = i.isDonburi ? '未定' : `¥${fmt(i.cost)}`;
+    return `  ・${i.type}：${costStr}${donburiMark}`;
   }).join('\n');
   
   const copyText = `【見積もり】${project}
@@ -947,7 +1094,7 @@ ${itemText}
 ──────────────
 合計（税抜）：¥${fmt(clientCharge)}
 合計（税込）：¥${fmt(Math.round(clientCharge * 1.1))}
-[DADA利益：¥${fmt(profit)} / 実質${actualMarginPct}%]`;
+[DADA利益：¥${fmt(profit)} / 実質${actualMarginPct}%]${hasDonburi ? '\n⚠️ コーダー費用は概算（どんぶり）。実費確定後に要確認。' : ''}`;
 
   // クライアント送付用コピーテキスト
   const clientCopyText = `${project}の件、
