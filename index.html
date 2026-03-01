@@ -495,6 +495,7 @@
   <nav class="tab-nav">
     <button class="tab-btn active" onclick="switchTab('fix')">LP修正</button>
     <button class="tab-btn" onclick="switchTab('lp')">新規LP</button>
+    <button class="tab-btn" onclick="switchTab('guide')">使い方</button>
   </nav>
 </header>
 
@@ -516,94 +517,122 @@
       </div>
     </div>
     <div class="field">
-      <label>クライアント種別</label>
-      <select id="lp-client-type" onchange="handleClientType()">
-        <option value="normal">通常</option>
-        <option value="rotnest">ロットネスト（固定価格）</option>
+      <label>クライアント区分</label>
+      <select id="lp-client-type" onchange="handleLPClientType()">
+        <option value="rotnest">ロットネスト</option>
+        <option value="existing">ロットネスト以外（既存）</option>
+        <option value="new">新規クライアント</option>
       </select>
     </div>
   </div>
 
-  <div class="section" id="lp-base-section">
-    <div class="section-title">基本パッケージ</div>
-    <div class="note-box">
-      ✦ 基本パッケージ：<strong>¥300,000</strong>（ワイヤー・デザイン・コーディング・データ納品）
+  <div class="section">
+    <div class="section-title">ベース価格</div>
+    <div id="lp-rotnest-note" class="note-box">
+      ✦ ロットネストは固定価格 <strong>¥300,000</strong>（ワイヤー・デザイン・コーディング・データ納品）
     </div>
-    <div id="lp-rotnest-note" style="display:none" class="note-box" style="margin-top:8px">
-      ⚠️ ロットネストは過去実績固定価格のため、基本価格は変更できません。オプション追加も要確認。
+    <div id="lp-base-price-wrap" style="display:none">
+      <div class="field">
+        <label>ベース価格</label>
+        <div class="amount-wrap"><span>¥</span><input type="number" id="lp-base-price" value="300000" min="0" step="10000"></div>
+        <p class="hint">目安：¥300,000〜¥400,000。新規クライアントは価格主導権を意識して設定してください。</p>
+      </div>
     </div>
   </div>
 
   <div class="section">
-    <div class="section-title">オプション追加</div>
-    <div class="options-grid" id="lp-options">
-      <label class="opt-tag" data-price="50000">
-        <input type="checkbox" onchange="toggleOpt(this)">
-        <span class="check"></span>
-        <span class="opt-label">LP構成・設計</span>
-        <span class="opt-price">+¥50,000</span>
-      </label>
-      <label class="opt-tag" data-price="30000">
+    <div class="section-title">オプション</div>
+    <p class="hint" style="margin-bottom:14px">該当するものにチェックを入れてください。</p>
+
+    <!-- ロットネスト共通オプション -->
+    <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:8px;font-weight:600;letter-spacing:.05em">COMMON</p>
+    <div class="options-grid" id="lp-opts-common">
+      <label class="opt-tag" data-price="20000">
         <input type="checkbox" onchange="toggleOpt(this)">
         <span class="check"></span>
         <span class="opt-label">Git対応</span>
-        <span class="opt-price">+¥30,000</span>
-      </label>
-      <label class="opt-tag" data-price="20000">
-        <input type="checkbox" onchange="toggleOpt(this)">
-        <span class="check"></span>
-        <span class="opt-label">スマホ最適化（別途）</span>
-        <span class="opt-price">+¥20,000</span>
-      </label>
-      <label class="opt-tag" data-price="30000">
-        <input type="checkbox" onchange="toggleOpt(this)">
-        <span class="check"></span>
-        <span class="opt-label">アニメーション実装</span>
-        <span class="opt-price">+¥30,000</span>
-      </label>
-      <label class="opt-tag" data-price="15000">
-        <input type="checkbox" onchange="toggleOpt(this)">
-        <span class="check"></span>
-        <span class="opt-label">フォーム設置・連携</span>
-        <span class="opt-price">+¥15,000</span>
-      </label>
-      <label class="opt-tag" data-price="20000">
-        <input type="checkbox" onchange="toggleOpt(this)">
-        <span class="check"></span>
-        <span class="opt-label">ABテスト用2パターン目</span>
         <span class="opt-price">+¥20,000</span>
       </label>
       <label class="opt-tag" data-price="10000">
         <input type="checkbox" onchange="toggleOpt(this)">
         <span class="check"></span>
-        <span class="opt-label">OGP / メタ設定</span>
+        <span class="opt-label">フォーム対応（埋め込み）</span>
         <span class="opt-price">+¥10,000</span>
+      </label>
+      <label class="opt-tag" data-price="30000" data-approx="true">
+        <input type="checkbox" onchange="toggleOpt(this)">
+        <span class="check"></span>
+        <span class="opt-label">環境構築</span>
+        <span class="opt-price">+¥30,000〜</span>
       </label>
     </div>
 
-    <div class="divider"></div>
-    <div class="field-row">
-      <div class="field">
-        <label>カスタムオプション名</label>
-        <input type="text" id="lp-custom-name" placeholder="例：多言語対応">
-      </div>
-      <div class="field">
-        <label>カスタムオプション金額</label>
-        <div class="amount-wrap"><span>¥</span><input type="number" id="lp-custom-price" placeholder="0" min="0" step="1000"></div>
+    <!-- ロットネスト以外・新規クライアント向けオプション -->
+    <div id="lp-opts-extra-wrap" style="display:none;margin-top:16px">
+      <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:8px;font-weight:600;letter-spacing:.05em">ロットネスト以外</p>
+      <div class="options-grid" id="lp-opts-extra">
+        <label class="opt-tag" data-price="80000">
+          <input type="checkbox" onchange="toggleOpt(this)">
+          <span class="check"></span>
+          <span class="opt-label">LP構成・ライティング</span>
+          <span class="opt-price">+¥80,000</span>
+        </label>
+        <label class="opt-tag" data-price="30000">
+          <input type="checkbox" onchange="toggleOpt(this)">
+          <span class="check"></span>
+          <span class="opt-label">A/Bテスト用バリエーション</span>
+          <span class="opt-price">+¥30,000</span>
+        </label>
+        <label class="opt-tag" data-price="15000" data-approx="true">
+          <input type="checkbox" onchange="toggleOpt(this)">
+          <span class="check"></span>
+          <span class="opt-label">GA4 / GTM設定</span>
+          <span class="opt-price">+¥15,000〜</span>
+        </label>
       </div>
     </div>
+
+    <div class="divider"></div>
+    <div id="lp-custom-rows"></div>
+    <button class="add-adj-btn" onclick="addLPCustomRow()" style="margin-top:4px">＋ カスタムオプションを追加</button>
   </div>
 
   <div class="section">
+    <div class="section-title">特急対応</div>
+    <label class="opt-tag" id="lp-express-tag" style="display:inline-flex;max-width:320px" data-price="0">
+      <input type="checkbox" id="lp-express-cb" onchange="toggleExpress()">
+      <span class="check"></span>
+      <span class="opt-label">特急対応</span>
+      <span class="opt-price" id="lp-express-price-label">+20%</span>
+    </label>
+    <div id="lp-express-wrap" style="display:none;margin-top:12px">
+      <div class="field" style="max-width:200px">
+        <label>割増率</label>
+        <div class="amount-wrap">
+          <input type="number" id="lp-express-rate" value="20" min="1" max="100" step="5" oninput="updateExpressLabel()">
+          <span style="margin-left:6px;font-size:.9rem">%</span>
+        </div>
+      </div>
+      <p class="hint" style="margin-top:6px">ベース価格＋オプション合計に対して割増します。</p>
+    </div>
+  </div>
+
+  <div class="section" id="lp-margin-section" style="display:none">
     <div class="section-title">ディレクションフィー</div>
     <div class="field">
       <label>ディレクションフィー金額</label>
       <div class="amount-wrap"><span>¥</span><input type="number" id="lp-dir-fee" placeholder="30000" min="0" step="1000"></div>
-      <p class="hint">新規LPの場合、基本 ¥30,000〜 が目安。オプション数・難易度に応じて調整してください。</p>
+      <p class="hint">目安：¥30,000〜。オプション数・難易度に応じて調整してください。</p>
     </div>
   </div>
 
+  <div class="field" style="padding: 0 0 8px">
+    <label>備考メモ（コピー用）</label>
+    <input type="text" id="lp-memo" placeholder="例：急ぎ対応">
+  </div>
+
   <button class="btn-calc" onclick="calcLP()">見積もりを算出する</button>
+  <button class="btn-reset" onclick="resetLP()">リセット</button>
 
   <div id="lp-result" style="display:none;margin-top:24px">
     <div class="result-card">
@@ -711,12 +740,136 @@
 
 </main>
 
+<!-- ======== 使い方 ======== -->
+<div class="panel" id="panel-guide" style="display:none">
+<main>
+  <div class="section">
+    <div class="section-title">基本の流れ</div>
+    <ol style="padding-left:1.2em;line-height:2.2;font-size:.95rem">
+      <li>「LP修正」タブを開く（デフォルトで開いています）</li>
+      <li>クライアント名・案件名を入力</li>
+      <li>外注費用を入力</li>
+      <li>マージン率を選択</li>
+      <li>「見積もりを算出する」を押す</li>
+      <li>社内確認用をコピーしてTetsuyaさんに確認 → クライアントへ送付</li>
+    </ol>
+    <p class="hint" style="margin-top:10px">※ 実態と合ってきたら確認なしで進めてOKになる予定です。</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">外注費用の入力</div>
+    <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:16px">外注種別によって表示価格の自動セットが変わります。</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px">
+        <div style="font-weight:700;font-size:.9rem;margin-bottom:4px">デザイナー（まや）</div>
+        <div style="font-size:.85rem;color:var(--text-muted)">仕入れ入力後、表示価格が自動で<span style="color:var(--accent)">1.5倍</span>にセットされます</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px">
+        <div style="font-weight:700;font-size:.9rem;margin-bottom:4px">デザイナー</div>
+        <div style="font-size:.85rem;color:var(--text-muted)">仕入れと同額がセットされます（手動調整OK）</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px">
+        <div style="font-weight:700;font-size:.9rem;margin-bottom:4px">コーダー</div>
+        <div style="font-size:.85rem;color:var(--text-muted)">仕入れと同額がセットされます。見積もり未定の場合は「🎲 どんぶり計算」を使ってください</div>
+      </div>
+    </div>
+    <div class="note-box" style="margin-top:12px">表示価格は手動で上書きできます。最低¥5,000を下回ることはできません。</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">どんぶり計算（コーダー見積もり未定時）</div>
+    <div class="note-box" style="margin-bottom:16px">⚠️ どんぶり計算は基本的には使わないでください。町野さんのように事前確認が難しい場合のみOKです。</div>
+    <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:16px">コーダー行の「🎲 見積もり未定・どんぶり計算」を押すと修正内容から金額を自動セットできます。</p>
+    <table style="width:100%;border-collapse:collapse;font-size:.88rem">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border)">
+          <th style="text-align:left;padding:10px 12px;color:var(--text-muted);font-weight:500">修正内容</th>
+          <th style="text-align:right;padding:10px 12px;color:var(--text-muted);font-weight:500">目安金額</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px 12px">画像差し替えのみ</td>
+          <td style="padding:10px 12px;text-align:right;font-family:'Outfit',sans-serif;font-weight:600">¥8,000</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px 12px">画像差し替え＋CSS修正</td>
+          <td style="padding:10px 12px;text-align:right;font-family:'Outfit',sans-serif;font-weight:600">¥15,000</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 12px">＋Git対応</td>
+          <td style="padding:10px 12px;text-align:right;font-family:'Outfit',sans-serif;font-weight:600;color:var(--accent)">+¥5,000</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="hint" style="margin-top:10px">どんぶり計算を使った場合、社内確認用コピーに自動で「概算」の注記が入ります。</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">マージン率の目安</div>
+    <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:16px">基本情報の「対象URL数」と「修正箇所の判断業務」を参考にマージン率を選んでください。</p>
+    <table style="width:100%;border-collapse:collapse;font-size:.88rem">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border)">
+          <th style="text-align:left;padding:10px 12px;color:var(--text-muted);font-weight:500">率</th>
+          <th style="text-align:left;padding:10px 12px;color:var(--text-muted);font-weight:500">目安</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px 12px;font-family:'Outfit',sans-serif;font-weight:700;color:var(--accent)">20%</td>
+          <td style="padding:10px 12px">軽微修正（1URL・判断なし）</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px 12px;font-family:'Outfit',sans-serif;font-weight:700;color:var(--accent)">25%</td>
+          <td style="padding:10px 12px">軽微修正（やや複雑）</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px 12px;font-family:'Outfit',sans-serif;font-weight:700;color:var(--accent)">30%</td>
+          <td style="padding:10px 12px">管理型（複数URL・差し替え管理あり）</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 12px;font-family:'Outfit',sans-serif;font-weight:700;color:var(--accent)">40%</td>
+          <td style="padding:10px 12px">リスク型（複数URL・複雑な判断あり）</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="hint" style="margin-top:10px">ディレクションフィーの最低金額は¥5,000です。</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">コピーについて</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px">
+        <div style="font-weight:700;font-size:.9rem;margin-bottom:4px">社内確認用</div>
+        <div style="font-size:.85rem;color:var(--text-muted)">仕入れ・利益・マージン率など内部情報が含まれます。<br>Tetsuyaさんへの確認に使ってください。</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px">
+        <div style="font-weight:700;font-size:.9rem;margin-bottom:4px">クライアント送付用</div>
+        <div style="font-size:.85rem;color:var(--text-muted)">そのままチャットに貼り付けてOKです。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">当面の運用フロー</div>
+    <div style="background:rgba(232,255,71,.05);border:1px solid rgba(232,255,71,.2);border-radius:var(--radius-sm);padding:16px;font-size:.9rem;line-height:2">
+      算出 → 社内確認用をコピーしてSlackでTetsuyaさんに共有<br>
+      → GO出しもらったらクライアント送付用をコピーして送付
+    </div>
+    <p class="hint" style="margin-top:10px">慣れてきたら確認なしで進めてOKになる予定です。</p>
+  </div>
+</main>
+</div>
+
 <script>
 /* ─────────── Tab ─────────── */
 function switchTab(t) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => { p.classList.remove('active'); p.style.display = 'none'; });
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('panel-' + t).classList.add('active');
+  const panel = document.getElementById('panel-' + t);
+  panel.classList.add('active');
+  panel.style.display = 'block';
   event.target.classList.add('active');
 }
 
@@ -1130,7 +1283,195 @@ function resetFix() {
   adjCount = 0;
 }
 
-/* ─────────── Utilities ─────────── */
+/* ─────────── LP: Custom Rows ─────────── */
+let lpCustomCount = 0;
+
+function addLPCustomRow() {
+  lpCustomCount++;
+  const id = lpCustomCount;
+  const div = document.createElement('div');
+  div.id = 'lp-custom-' + id;
+  div.style.cssText = 'display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;margin-bottom:10px';
+  div.innerHTML = `
+    <div class="field">
+      <label>オプション名</label>
+      <input type="text" placeholder="例：多言語対応">
+    </div>
+    <div class="field">
+      <label>金額</label>
+      <div class="amount-wrap"><span>¥</span><input type="number" placeholder="0" min="0" step="1000"></div>
+    </div>
+    <button onclick="document.getElementById('lp-custom-${id}').remove()" style="background:none;border:1px solid var(--border);color:var(--danger);border-radius:var(--radius-sm);width:36px;height:36px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;align-self:flex-end">✕</button>
+  `;
+  document.getElementById('lp-custom-rows').appendChild(div);
+}
+
+/* ─────────── LP: Express ─────────── */
+function toggleExpress() {
+  const cb = document.getElementById('lp-express-cb');
+  document.getElementById('lp-express-wrap').style.display = cb.checked ? 'block' : 'none';
+}
+
+function updateExpressLabel() {
+  const rate = document.getElementById('lp-express-rate').value || 20;
+  document.getElementById('lp-express-price-label').textContent = `+${rate}%`;
+}
+
+/* ─────────── LP: Client Type ─────────── */
+function handleLPClientType() {
+  const type = document.getElementById('lp-client-type').value;
+  const rotnestNote = document.getElementById('lp-rotnest-note');
+  const basePriceWrap = document.getElementById('lp-base-price-wrap');
+  const extraWrap = document.getElementById('lp-opts-extra-wrap');
+  const marginSection = document.getElementById('lp-margin-section');
+
+  if (type === 'rotnest') {
+    rotnestNote.style.display = 'block';
+    basePriceWrap.style.display = 'none';
+    extraWrap.style.display = 'none';
+    marginSection.style.display = 'none';
+  } else {
+    rotnestNote.style.display = 'none';
+    basePriceWrap.style.display = 'block';
+    extraWrap.style.display = 'block';
+    marginSection.style.display = 'block';
+  }
+}
+
+/* ─────────── LP: Options ─────────── */
+function toggleOpt(cb) {
+  cb.closest('.opt-tag').classList.toggle('selected', cb.checked);
+}
+
+/* ─────────── LP Calc ─────────── */
+function calcLP() {
+  const client = document.getElementById('lp-client').value || '未入力';
+  const project = document.getElementById('lp-project').value || '未入力';
+  const clientType = document.getElementById('lp-client-type').value;
+  const memo = document.getElementById('lp-memo').value;
+  const isRotnest = clientType === 'rotnest';
+
+  // ベース価格
+  const basePrice = isRotnest ? 300000 : (parseInt(document.getElementById('lp-base-price').value) || 300000);
+
+  // オプション集計
+  let optTotal = 0;
+  let optItems = [];
+  let hasApprox = false;
+
+  document.querySelectorAll('#lp-opts-common .opt-tag, #lp-opts-extra .opt-tag').forEach(tag => {
+    const cb = tag.querySelector('input[type="checkbox"]');
+    if (cb && cb.checked) {
+      const price = parseInt(tag.dataset.price) || 0;
+      const isApprox = tag.dataset.approx === 'true';
+      const label = tag.querySelector('.opt-label').textContent;
+      optTotal += price;
+      optItems.push({ label, price, isApprox });
+      if (isApprox) hasApprox = true;
+    }
+  });
+
+  // カスタムオプション（複数行）
+  document.querySelectorAll('#lp-custom-rows > div').forEach(row => {
+    const nameEl = row.querySelector('input[type="text"]');
+    const priceEl = row.querySelector('input[type="number"]');
+    const name = nameEl ? nameEl.value : '';
+    const price = parseInt(priceEl ? priceEl.value : 0) || 0;
+    if (name && price) {
+      optTotal += price;
+      optItems.push({ label: name, price, isApprox: false });
+    }
+  });
+
+  // 特急費用
+  const expressCb = document.getElementById('lp-express-cb');
+  const expressRate = parseFloat(document.getElementById('lp-express-rate').value) || 20;
+  const hasExpress = expressCb && expressCb.checked;
+
+  // ディレクションフィー（ロットネストはなし）
+  const dirFee = isRotnest ? 0 : (parseInt(document.getElementById('lp-dir-fee').value) || 0);
+
+  const baseAndOpt = basePrice + optTotal + dirFee;
+  const expressFee = hasExpress ? Math.round(baseAndOpt * expressRate / 100) : 0;
+  const subtotal = baseAndOpt + expressFee;
+
+  // 結果表示
+  let html = `
+    <div class="result-row"><span class="label">クライアント</span><span class="value">${client}</span></div>
+    <div class="result-row"><span class="label">案件名</span><span class="value">${project}</span></div>
+    <div class="result-row"><span class="label">区分</span><span class="value">${clientType === 'rotnest' ? 'ロットネスト' : clientType === 'existing' ? '既存クライアント' : '新規クライアント'}</span></div>
+    <div class="result-row"><span class="label">ベース価格</span><span class="value">¥${fmt(basePrice)}</span></div>
+  `;
+
+  optItems.forEach(opt => {
+    html += `<div class="result-row sub"><span class="label">　＋ ${opt.label}</span><span class="value">¥${fmt(opt.price)}${opt.isApprox ? '〜 <span class="badge badge-warn">概算</span>' : ''}</span></div>`;
+  });
+
+  if (dirFee > 0) {
+    html += `<div class="result-row"><span class="label">ディレクションフィー</span><span class="value">¥${fmt(dirFee)}</span></div>`;
+  }
+
+  if (hasExpress) {
+    html += `<div class="result-row"><span class="label">特急対応（+${expressRate}%）</span><span class="value" style="color:var(--warning)">¥${fmt(expressFee)}</span></div>`;
+  }
+
+  html += `
+    <div class="result-row total"><span class="label">クライアント請求（税抜）</span><span class="value">¥${fmt(subtotal)}${hasApprox ? '〜' : ''}</span></div>
+    <div class="result-row sub"><span class="label">消費税（10%）</span><span class="value">¥${fmt(Math.round(subtotal * 0.1))}${hasApprox ? '〜' : ''}</span></div>
+    <div class="result-row sub"><span class="label" style="font-weight:700;color:var(--text)">クライアント請求（税込）</span><span class="value" style="color:var(--text)">¥${fmt(Math.round(subtotal * 1.1))}${hasApprox ? '〜' : ''}</span></div>
+  `;
+
+  document.getElementById('lp-result-rows').innerHTML = html;
+  document.getElementById('lp-result').style.display = 'block';
+  document.getElementById('lp-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  // 社内確認用コピー
+  let optText = optItems.map(o => `  ・${o.label}：¥${fmt(o.price)}${o.isApprox ? '〜（概算）' : ''}`).join('\n');
+  const copyText = `【見積もり】${project}
+クライアント：${client}（${clientType === 'rotnest' ? 'ロットネスト' : clientType === 'existing' ? '既存' : '新規'}）${memo ? '\n備考：' + memo : ''}
+──────────────
+ベース：¥${fmt(basePrice)}
+${optText ? optText + '\n' : ''}${dirFee ? 'ディレクションフィー：¥' + fmt(dirFee) + '\n' : ''}${hasExpress ? '特急対応（+' + expressRate + '%）：¥' + fmt(expressFee) + '\n' : ''}──────────────
+合計（税抜）：¥${fmt(subtotal)}${hasApprox ? '〜' : ''}
+合計（税込）：¥${fmt(Math.round(subtotal * 1.1))}${hasApprox ? '〜' : ''}`;
+
+  // クライアント送付用コピー
+  const clientCopyText = `${project}の件、
+お見積もり以下になります。
+ーーーー
+合計（税抜）：¥${fmt(subtotal)}${hasApprox ? '〜' : ''}
+ーーーー
+ご確認よろしくお願いいたします！`;
+
+  document.getElementById('lp-copy-area').innerHTML = `
+    <p style="font-size:.75rem;color:var(--text-muted);margin:16px 0 6px;letter-spacing:.05em">▸ 社内確認用</p>
+    <div class="copy-area" id="lp-copy-text">${copyText}</div>
+    <button class="btn-copy" onclick="copyText('lp-copy-text', this)">📋 コピー</button>
+    <p style="font-size:.75rem;color:var(--text-muted);margin:16px 0 6px;letter-spacing:.05em">▸ クライアント送付用</p>
+    <div class="copy-area" id="lp-copy-client">${clientCopyText}</div>
+    <button class="btn-copy" onclick="copyText('lp-copy-client', this)">📋 コピー</button>
+  `;
+}
+
+function resetLP() {
+  document.getElementById('lp-client').value = '';
+  document.getElementById('lp-project').value = '';
+  document.getElementById('lp-client-type').value = 'rotnest';
+  document.getElementById('lp-memo').value = '';
+  document.getElementById('lp-express-cb').checked = false;
+  document.getElementById('lp-express-wrap').style.display = 'none';
+  document.getElementById('lp-express-rate').value = '20';
+  document.getElementById('lp-express-price-label').textContent = '+20%';
+  document.getElementById('lp-custom-rows').innerHTML = '';
+  lpCustomCount = 0;
+  document.querySelectorAll('#lp-opts-common input[type="checkbox"], #lp-opts-extra input[type="checkbox"]').forEach(cb => {
+    cb.checked = false;
+    cb.closest('.opt-tag').classList.remove('selected');
+  });
+  document.getElementById('lp-result').style.display = 'none';
+  document.getElementById('lp-copy-area').innerHTML = '';
+  handleLPClientType();
+}
 function fmt(n) {
   return n.toLocaleString('ja-JP');
 }
