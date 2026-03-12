@@ -519,97 +519,112 @@
     </div>
   </div>
 
+  <!-- 制作費用（外注費） -->
   <div class="section">
-    <div class="section-title">ページ種別</div>
-    <div class="options-grid" id="hp-page-type-grid">
-      <label class="opt-tag" data-type="sub" data-base="50000" onclick="selectHPType(this)">
-        <span class="check"></span>
-        <span class="opt-label">下層ページ</span>
-        <span class="opt-price">base ¥50,000</span>
-      </label>
-      <label class="opt-tag" data-type="top" data-base="80000" onclick="selectHPType(this)">
-        <span class="check"></span>
-        <span class="opt-label">トップページ</span>
-        <span class="opt-price">base ¥80,000</span>
-      </label>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">ユニークセクション数</div>
+    <div class="section-title">制作費用（外注費）</div>
     <div class="field">
-      <select id="hp-sections">
-        <option value="1">1セクション</option>
-        <option value="2">2セクション</option>
-        <option value="3">3セクション</option>
-        <option value="4">4セクション</option>
-        <option value="5" selected>5セクション</option>
-        <option value="6">6セクション</option>
-        <option value="7">7セクション</option>
-        <option value="8">8セクション</option>
-        <option value="9">9セクション</option>
-        <option value="10">10セクション</option>
-        <option value="11">11セクション</option>
-        <option value="12">12セクション</option>
-        <option value="13">13セクション</option>
-        <option value="14">14セクション</option>
-        <option value="15">15セクション以上</option>
-      </select>
-      <p class="hint">繰り返しパターンは1としてカウント。4セクションを超えた分から +¥8,000/セクション</p>
+      <label>外注デザイナーへの支払い額</label>
+      <div class="amount-wrap">
+        <span>¥</span>
+        <input type="number" id="hp-outsource-cost" placeholder="例：70000" min="0" step="5000" oninput="updateHPPreview()">
+      </div>
+      <p class="hint">外注デザイナーに実際に支払う金額を入力してください</p>
+    </div>
+    <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">
+      <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:10px">外注費の目安を参考にする</p>
+      <div class="options-grid" id="hp-page-type-grid" style="margin-bottom:10px">
+        <label class="opt-tag" data-base="50000" onclick="selectHPType(this)">
+          <span class="check"></span>
+          <span class="opt-label">下層ページ</span>
+          <span class="opt-price">base ¥50,000</span>
+        </label>
+        <label class="opt-tag" data-base="80000" onclick="selectHPType(this)">
+          <span class="check"></span>
+          <span class="opt-label">トップページ</span>
+          <span class="opt-price">base ¥80,000</span>
+        </label>
+      </div>
+      <div class="field-row" style="margin-bottom:10px">
+        <div class="field">
+          <label>ユニークセクション数</label>
+          <select id="hp-sections" onchange="updateHPEstimate()">
+            <option value="1">1セクション</option>
+            <option value="2">2セクション</option>
+            <option value="3">3セクション</option>
+            <option value="4">4セクション</option>
+            <option value="5" selected>5セクション</option>
+            <option value="6">6セクション</option>
+            <option value="7">7セクション</option>
+            <option value="8">8セクション</option>
+            <option value="9">9セクション</option>
+            <option value="10">10セクション</option>
+            <option value="11">11セクション</option>
+            <option value="12">12セクション</option>
+            <option value="13">13セクション</option>
+            <option value="14">14セクション</option>
+            <option value="15">15セクション以上</option>
+          </select>
+          <p class="hint">繰り返しパターンは1カウント。4超で +¥8,000/セクション</p>
+        </div>
+      </div>
+      <div class="options-grid" id="hp-opts" style="margin-bottom:10px">
+        <label class="opt-tag" data-price="10000" onclick="toggleHPOpt(this)">
+          <span class="check"></span>
+          <span class="opt-label">フォームあり</span>
+          <span class="opt-price">+¥10,000</span>
+        </label>
+        <label class="opt-tag" data-price="10000" onclick="toggleHPOpt(this)">
+          <span class="check"></span>
+          <span class="opt-label">レスポンシブ</span>
+          <span class="opt-price">+¥10,000</span>
+        </label>
+        <label class="opt-tag" data-price="15000" onclick="toggleHPOpt(this)">
+          <span class="check"></span>
+          <span class="opt-label">既存データなし</span>
+          <span class="opt-price">+¥15,000</span>
+        </label>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border-radius:var(--radius-sm);padding:10px 14px">
+        <span style="font-size:.85rem;color:var(--text-muted)">外注費の目安</span>
+        <span id="hp-estimate-display" style="font-family:'Outfit',sans-serif;font-weight:700;color:var(--accent)">—</span>
+      </div>
     </div>
   </div>
 
+  <!-- ディレクション費用 -->
   <div class="section">
-    <div class="section-title">オプション</div>
-    <div class="options-grid" id="hp-opts">
-      <label class="opt-tag" data-price="10000" onclick="toggleHPOpt(this)">
-        <span class="check"></span>
-        <span class="opt-label">フォームあり</span>
-        <span class="opt-price">+¥10,000</span>
-      </label>
-      <label class="opt-tag" data-price="10000" onclick="toggleHPOpt(this)">
-        <span class="check"></span>
-        <span class="opt-label">レスポンシブ</span>
-        <span class="opt-price">+¥10,000</span>
-      </label>
-      <label class="opt-tag" data-price="15000" onclick="toggleHPOpt(this)">
-        <span class="check"></span>
-        <span class="opt-label">既存データなし</span>
-        <span class="opt-price">+¥15,000</span>
-      </label>
-      <label class="opt-tag" data-price="50000" onclick="toggleHPOpt(this)">
-        <span class="check"></span>
-        <span class="opt-label">構成・ディレクションから</span>
-        <span class="opt-price">+¥50,000</span>
-      </label>
+    <div class="section-title">ディレクション費用（DADAの利益）</div>
+    <div class="margin-btns" style="margin-bottom:12px">
+      <button class="margin-btn" onclick="setHPDir(20000, this)"><span class="rate">¥20,000</span><span class="desc">シンプル</span></button>
+      <button class="margin-btn" onclick="setHPDir(30000, this)"><span class="rate">¥30,000</span><span class="desc">標準</span></button>
+      <button class="margin-btn" onclick="setHPDir(50000, this)"><span class="rate">¥50,000</span><span class="desc">調整多め</span></button>
     </div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">外注設定</div>
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-      <label class="opt-tag" id="hp-outsource-toggle" data-active="false" onclick="toggleHPOutsource()" style="width:auto">
-        <span class="check" id="hp-outsource-check"></span>
-        <span class="opt-label">外注に出す</span>
-      </label>
-    </div>
-    <div id="hp-outsource-wrap" style="display:none">
-      <label>DADAマージン率</label>
-      <div class="margin-btns" style="margin-bottom:10px">
-        <button class="margin-btn" onclick="setHPMargin(20, this)"><span class="rate">20%</span><span class="desc">薄め</span></button>
-        <button class="margin-btn active" onclick="setHPMargin(30, this)"><span class="rate">30%</span><span class="desc">標準</span></button>
-        <button class="margin-btn" onclick="setHPMargin(40, this)"><span class="rate">40%</span><span class="desc">厚め</span></button>
-      </div>
-      <div class="margin-custom-wrap">
-        <input type="number" id="hp-margin-rate" value="30" min="1" max="99" style="width:80px" oninput="onHPMarginInput()">
-        <span style="font-size:.85rem;color:var(--text-muted)">%　カスタム入力</span>
-      </div>
+    <div class="margin-custom-wrap">
+      <input type="number" id="hp-dir-fee" placeholder="0" min="0" step="5000" oninput="clearHPDirBtns();updateHPPreview()" style="width:130px">
+      <span style="font-size:.85rem;color:var(--text-muted)">円　カスタム入力</span>
     </div>
   </div>
 
   <div class="section">
     <div class="section-title">備考メモ（コピー用）</div>
     <textarea id="hp-memo" rows="3" placeholder="例：ワイヤーあり、修正2回まで含む" style="resize:vertical"></textarea>
+  </div>
+
+  <!-- リアルタイムプレビュー -->
+  <div id="hp-preview" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 28px;margin-bottom:16px">
+    <div style="font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;font-family:'Outfit',sans-serif">プレビュー</div>
+    <div style="display:flex;justify-content:space-between;font-size:.9rem;padding:6px 0;border-bottom:1px solid var(--border)">
+      <span style="color:var(--text-muted)">制作費用（外注費）</span>
+      <span id="hp-preview-seisaku" style="font-family:'Outfit',sans-serif;font-weight:600">—</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:.9rem;padding:6px 0;border-bottom:1px solid var(--border)">
+      <span style="color:var(--text-muted)">ディレクション費用</span>
+      <span id="hp-preview-dir" style="font-family:'Outfit',sans-serif;font-weight:600">—</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:1rem;padding:10px 0 0;margin-top:4px">
+      <span style="font-weight:700">クライアント請求（税抜）</span>
+      <span id="hp-preview-total" style="font-family:'Outfit',sans-serif;font-weight:700;font-size:1.3rem;color:var(--accent)">—</span>
+    </div>
   </div>
 
   <button class="btn-calc" onclick="calcHP()">見積もりを算出する</button>
@@ -1612,156 +1627,106 @@ function copyText(elId, btn) {
   });
 }
 
-/* ─────────── HP下層: State ─────────── */
-let hpBasePrice = 50000;
-let hpOutsource = false;
-let hpMarginRate = 30;
+/* ─────────── HP下層 ─────────── */
+let hpBasePrice = 0;
 
 function selectHPType(el) {
-  document.querySelectorAll('#hp-page-type-grid .opt-tag').forEach(t => {
-    t.classList.remove('checked');
-    t.querySelector('.check').innerHTML = '';
-  });
+  document.querySelectorAll('#hp-page-type-grid .opt-tag').forEach(t => t.classList.remove('checked'));
   el.classList.add('checked');
-  // check handled by CSS
   hpBasePrice = parseInt(el.dataset.base);
+  updateHPEstimate();
 }
 
 function toggleHPOpt(el) {
-  const isChecked = el.classList.contains('checked');
-  if (isChecked) {
-    el.classList.remove('checked');
-    el.querySelector('.check').innerHTML = '';
-  } else {
-    el.classList.add('checked');
-    // check handled by CSS
-  }
+  el.classList.toggle('checked');
+  updateHPEstimate();
 }
 
-function toggleHPOutsource() {
-  hpOutsource = !hpOutsource;
-  const toggle = document.getElementById('hp-outsource-toggle');
-  const wrap = document.getElementById('hp-outsource-wrap');
-  if (hpOutsource) {
-    toggle.classList.add('checked');
-    wrap.style.display = 'block';
-  } else {
-    toggle.classList.remove('checked');
-    wrap.style.display = 'none';
+function updateHPEstimate() {
+  if (hpBasePrice === 0) {
+    document.getElementById('hp-estimate-display').textContent = '—';
+    return;
   }
+  const sections = parseInt(document.getElementById('hp-sections').value) || 5;
+  const secAdd = Math.max(0, sections - 4) * 8000;
+  let optAdd = 0;
+  document.querySelectorAll('#hp-opts .opt-tag.checked').forEach(tag => {
+    optAdd += parseInt(tag.dataset.price) || 0;
+  });
+  const estimate = hpBasePrice + secAdd + optAdd;
+  document.getElementById('hp-estimate-display').textContent = '¥' + fmt(estimate);
 }
 
-function setHPMargin(rate, btn) {
-  hpMarginRate = rate;
-  document.getElementById('hp-margin-rate').value = rate;
-  document.querySelectorAll('#hp-outsource-wrap .margin-btn').forEach(b => b.classList.remove('active'));
+function setHPDir(amount, btn) {
+  document.getElementById('hp-dir-fee').value = amount;
+  document.querySelectorAll('#panel-hp .margin-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  updateHPPreview();
 }
 
-function onHPMarginInput() {
-  hpMarginRate = parseInt(document.getElementById('hp-margin-rate').value) || 30;
-  document.querySelectorAll('#hp-outsource-wrap .margin-btn').forEach(b => b.classList.remove('active'));
+function clearHPDirBtns() {
+  document.querySelectorAll('#panel-hp .margin-btn').forEach(b => b.classList.remove('active'));
+}
+
+function updateHPPreview() {
+  const outsource = parseInt(document.getElementById('hp-outsource-cost').value) || 0;
+  const dir = parseInt(document.getElementById('hp-dir-fee').value) || 0;
+  if (outsource === 0 && dir === 0) {
+    document.getElementById('hp-preview').style.display = 'none';
+    return;
+  }
+  const total = outsource + dir;
+  document.getElementById('hp-preview').style.display = 'block';
+  document.getElementById('hp-preview-seisaku').textContent = outsource ? '¥' + fmt(outsource) : '—';
+  document.getElementById('hp-preview-dir').textContent = dir ? '¥' + fmt(dir) : '—';
+  document.getElementById('hp-preview-total').textContent = '¥' + fmt(total);
 }
 
 function calcHP() {
   const client = document.getElementById('hp-client').value || '未入力';
   const project = document.getElementById('hp-project').value || '未入力';
   const memo = document.getElementById('hp-memo').value;
-  const sections = parseInt(document.getElementById('hp-sections').value) || 5;
+  const outsource = parseInt(document.getElementById('hp-outsource-cost').value) || 0;
+  const dir = parseInt(document.getElementById('hp-dir-fee').value) || 0;
 
-  if (hpBasePrice === 50000 && !document.querySelector('#hp-page-type-grid .opt-tag.checked')) {
-    alert('ページ種別を選択してください。');
+  if (outsource === 0) {
+    alert('制作費用（外注費）を入力してください。');
     return;
   }
 
-  const secAdd = Math.max(0, sections - 4) * 8000;
+  const total = outsource + dir;
 
-  let optAdd = 0;
-  let optItems = [];
-  document.querySelectorAll('#hp-opts .opt-tag.checked').forEach(tag => {
-    const price = parseInt(tag.dataset.price) || 0;
-    const label = tag.querySelector('.opt-label').textContent;
-    optAdd += price;
-    optItems.push({ label, price });
-  });
-
-  const total = hpBasePrice + secAdd + optAdd;
-  const lo = Math.round(total * 0.85 / 5000) * 5000;
-  const hi = Math.round(total * 1.15 / 5000) * 5000;
-
-  let rank = '標準';
-  if (total <= 60000)       rank = 'シンプル';
-  else if (total >= 150000) rank = 'LP相当 / 大規模';
-  else if (total >= 100000) rank = 'LP相当';
-  else if (total >= 80000)  rank = 'ボリューム大';
-
-  const pageTypeEl = document.querySelector('#hp-page-type-grid .opt-tag.checked');
-  const pageTypeLabel = pageTypeEl ? pageTypeEl.querySelector('.opt-label').textContent : '未選択';
-
-  let html = `
+  const html = `
     <div class="result-row"><span class="label">クライアント</span><span class="value">${client}</span></div>
     <div class="result-row"><span class="label">案件名</span><span class="value">${project}</span></div>
-    <div class="result-row"><span class="label">ページ種別</span><span class="value">${pageTypeLabel}</span></div>
-    <div class="result-row"><span class="label">ユニークセクション数</span><span class="value">${sections}</span></div>
-    <div class="result-row"><span class="label">ベース価格</span><span class="value">¥${fmt(hpBasePrice)}</span></div>
-  `;
-
-  if (secAdd > 0) {
-    html += `<div class="result-row sub"><span class="label">　＋ セクション加算（${sections - 4}セクション分）</span><span class="value">¥${fmt(secAdd)}</span></div>`;
-  }
-
-  optItems.forEach(o => {
-    html += `<div class="result-row sub"><span class="label">　＋ ${o.label}</span><span class="value">¥${fmt(o.price)}</span></div>`;
-  });
-
-  html += `
+    <div class="result-row"><span class="label">制作費用（外注費）</span><span class="value">¥${fmt(outsource)}</span></div>
+    <div class="result-row"><span class="label">ディレクション費用</span><span class="value">¥${fmt(dir)}</span></div>
     <div class="result-row total">
-      <span class="label">請求額（税抜）<span class="badge badge-info" style="margin-left:8px">${rank}</span></span>
+      <span class="label">クライアント請求額（税抜）</span>
       <span class="value">¥${fmt(total)}</span>
     </div>
-    <div class="result-row sub"><span class="label">目安レンジ</span><span class="value" style="color:var(--text-muted)">¥${fmt(lo)} 〜 ¥${fmt(hi)}</span></div>
     <div class="result-row sub"><span class="label">消費税（10%）</span><span class="value" style="color:var(--text-muted)">¥${fmt(Math.round(total * 0.1))}</span></div>
     <div class="result-row sub"><span class="label" style="color:var(--text);font-weight:700">請求額（税込）</span><span class="value" style="color:var(--text)">¥${fmt(Math.round(total * 1.1))}</span></div>
   `;
-
-  // 外注の場合
-  let outsourceText = '';
-  if (hpOutsource) {
-    const outsourceAmt = Math.round(total * (1 - hpMarginRate / 100) / 5000) * 5000;
-    const marginAmt = total - outsourceAmt;
-    const marginPct = Math.round((marginAmt / total) * 100);
-    html += `
-      <div class="result-row" style="margin-top:8px;border-top:1px solid rgba(0,0,0,.06);padding-top:12px">
-        <span class="label">外注への支払い（目安）</span>
-        <span class="value" style="color:var(--text-muted)">¥${fmt(outsourceAmt)}</span>
-      </div>
-      <div class="result-row sub"><span class="label">DADAマージン（${marginPct}%）</span><span class="value" style="color:var(--accent)">¥${fmt(marginAmt)}</span></div>
-    `;
-    outsourceText = `外注支払い：¥${fmt(outsourceAmt)}\nDADAマージン（${marginPct}%）：¥${fmt(marginAmt)}\n`;
-  }
 
   document.getElementById('hp-result-rows').innerHTML = html;
   document.getElementById('hp-result').style.display = 'block';
   document.getElementById('hp-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-  // コピーテキスト生成
-  const optText = optItems.map(o => `  ・${o.label}：¥${fmt(o.price)}`).join('\n');
-  const secText = secAdd > 0 ? `  ・セクション加算（${sections - 4}セクション分）：¥${fmt(secAdd)}\n` : '';
-
   const copyText = `【見積もり】${project}
 クライアント：${client}${memo ? '\n備考：' + memo : ''}
 ──────────────
-ページ種別：${pageTypeLabel}
-ユニークセクション数：${sections}
-ベース：¥${fmt(hpBasePrice)}
-${secText}${optText ? optText + '\n' : ''}──────────────
-合計（税抜）：¥${fmt(total)}　[${rank}]
+制作費用（外注費）：¥${fmt(outsource)}
+ディレクション費用：¥${fmt(dir)}
+──────────────
+合計（税抜）：¥${fmt(total)}
 合計（税込）：¥${fmt(Math.round(total * 1.1))}
-${outsourceText}`;
+[DADA利益：¥${fmt(dir)}]`;
 
-  const clientCopyText = `${project}の件、
-お見積もり以下になります。
+  const clientCopyText = `${project}の件、お見積もり以下になります。
 ーーーー
+制作費用：¥${fmt(outsource)}
+ディレクション費用：¥${fmt(dir)}
 合計（税抜）：¥${fmt(total)}
 ーーーー
 ご確認よろしくお願いいたします！`;
@@ -1780,21 +1745,14 @@ function resetHP() {
   document.getElementById('hp-client').value = '';
   document.getElementById('hp-project').value = '';
   document.getElementById('hp-memo').value = '';
+  document.getElementById('hp-outsource-cost').value = '';
+  document.getElementById('hp-dir-fee').value = '';
   document.getElementById('hp-sections').value = '5';
-  document.querySelectorAll('#hp-page-type-grid .opt-tag').forEach(t => {
-    t.classList.remove('checked');
-  });
-  document.querySelectorAll('#hp-opts .opt-tag').forEach(t => {
-    t.classList.remove('checked');
-  });
-  hpBasePrice = 50000;
-  hpOutsource = false;
-  hpMarginRate = 30;
-  document.getElementById('hp-outsource-toggle').classList.remove('checked');
-  document.getElementById('hp-outsource-wrap').style.display = 'none';
-  document.getElementById('hp-margin-rate').value = '30';
-  document.querySelectorAll('#hp-outsource-wrap .margin-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector('#hp-outsource-wrap .margin-btn:nth-child(2)').classList.add('active');
+  document.querySelectorAll('#hp-page-type-grid .opt-tag, #hp-opts .opt-tag').forEach(t => t.classList.remove('checked'));
+  document.querySelectorAll('#panel-hp .margin-btn').forEach(b => b.classList.remove('active'));
+  hpBasePrice = 0;
+  document.getElementById('hp-estimate-display').textContent = '—';
+  document.getElementById('hp-preview').style.display = 'none';
   document.getElementById('hp-result').style.display = 'none';
   document.getElementById('hp-copy-area').innerHTML = '';
 }
