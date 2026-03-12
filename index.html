@@ -1623,7 +1623,7 @@ function selectHPType(el) {
     t.querySelector('.check').innerHTML = '';
   });
   el.classList.add('checked');
-  el.querySelector('.check').innerHTML = '<span style="font-size:10px;color:#ffffff;font-weight:700">✓</span>';
+  // check handled by CSS
   hpBasePrice = parseInt(el.dataset.base);
 }
 
@@ -1634,22 +1634,19 @@ function toggleHPOpt(el) {
     el.querySelector('.check').innerHTML = '';
   } else {
     el.classList.add('checked');
-    el.querySelector('.check').innerHTML = '<span style="font-size:10px;color:#ffffff;font-weight:700">✓</span>';
+    // check handled by CSS
   }
 }
 
 function toggleHPOutsource() {
   hpOutsource = !hpOutsource;
   const toggle = document.getElementById('hp-outsource-toggle');
-  const check = document.getElementById('hp-outsource-check');
   const wrap = document.getElementById('hp-outsource-wrap');
   if (hpOutsource) {
     toggle.classList.add('checked');
-    check.innerHTML = '<span style="font-size:10px;color:#ffffff;font-weight:700">✓</span>';
     wrap.style.display = 'block';
   } else {
     toggle.classList.remove('checked');
-    check.innerHTML = '';
     wrap.style.display = 'none';
   }
 }
@@ -1786,17 +1783,14 @@ function resetHP() {
   document.getElementById('hp-sections').value = '5';
   document.querySelectorAll('#hp-page-type-grid .opt-tag').forEach(t => {
     t.classList.remove('checked');
-    t.querySelector('.check').innerHTML = '';
   });
   document.querySelectorAll('#hp-opts .opt-tag').forEach(t => {
     t.classList.remove('checked');
-    t.querySelector('.check').innerHTML = '';
   });
   hpBasePrice = 50000;
   hpOutsource = false;
   hpMarginRate = 30;
   document.getElementById('hp-outsource-toggle').classList.remove('checked');
-  document.getElementById('hp-outsource-check').innerHTML = '';
   document.getElementById('hp-outsource-wrap').style.display = 'none';
   document.getElementById('hp-margin-rate').value = '30';
   document.querySelectorAll('#hp-outsource-wrap .margin-btn').forEach(b => b.classList.remove('active'));
